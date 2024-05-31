@@ -6,9 +6,8 @@
 #SBATCH --partition=GPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
-#SBATCH --mem=16G
 
 # Carica i moduli necessari (aggiusta in base alla tua configurazione)
 module load python/3.9
