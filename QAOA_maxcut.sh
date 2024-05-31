@@ -14,13 +14,13 @@
 module load python/3.9
 module load tensorflow
 module load keras
+module load numpy
 module load pennylane
 
-# Attiva l'ambiente virtuale
-source /path/to/your/venv/bin/activate
+# Verifica che i moduli siano stati caricati correttamente
+echo "Moduli caricati:"
+module list
 
 # Esegui lo script Python
 python /path/to/your/script.py
 
-# Disattiva l'ambiente virtuale
-deactivate
