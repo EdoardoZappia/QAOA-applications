@@ -3,11 +3,10 @@
 #SBATCH --output=QAOA_maxcut_%j.log
 #SBATCH --error=QAOA_maxcut_%j.err
 #SBATCH --time=01:00:00
-#SBATCH --partition=GPU
+#SBATCH --partition=THIN
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --gres=gpu:1
 
 # Carica i moduli necessari (aggiusta in base alla tua configurazione)
 module load python/3.9
