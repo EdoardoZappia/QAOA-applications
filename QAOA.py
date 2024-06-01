@@ -233,6 +233,8 @@ new_graph = nx.gnp_random_graph(20, p=3 / 7)
 new_cost = qaoa_maxcut_graph(new_graph)
 
 nx.draw(new_graph)
+plt.savefig("test_graph.png")  # Specifica il percorso e il nome del file immagine
+plt.close()  # Chiudi la figura per liberare la memoria
 
 start_zeros = tf.zeros(shape=(2 * n_layers, 1))
 
@@ -257,4 +259,7 @@ plt.ylabel("Cost function", fontsize=12)
 plt.xlabel("Iteration", fontsize=12)
 plt.legend()
 ax.set_xticks([0, 5, 10, 15, 20])
-plt.show()
+#plt.show()
+
+plt.savefig("results.png")  # Specifica il percorso e il nome del file immagine
+plt.close()  # Chiudi la figura per liberare la memoria
