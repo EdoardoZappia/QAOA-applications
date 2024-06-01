@@ -4,7 +4,7 @@ from pennylane import qaoa
 
 # Classical Machine Learning
 import tensorflow as tf
-from tensorflow.keras.layers import LSTMCell
+from tf.keras.layers import LSTMCell
 # Generation of graphs
 import networkx as nx
 
