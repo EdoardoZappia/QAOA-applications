@@ -16,7 +16,7 @@ conda activate deep_learning
 conda install --yes tensorflow keras numpy pennylane
 
 # Navigate to the script directory
-cd /path/to/your/script
+
 
 # Run the Python script
 python QAOA.py
