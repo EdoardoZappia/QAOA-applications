@@ -116,7 +116,7 @@ def recurrent_loop(graph_cost, lstm_cell, n_layers=2, intermediate_steps=False, 
         return loss
 
 def InitializeParameters(n_layers):
-    return LSTMCell(2 * n_layers)
+    return tf.keras.layers.LSTMCell(2 * n_layers)
 
 def ParametersCopy(src, dest):
     dest.set_weights(src.get_weights())
