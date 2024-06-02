@@ -161,6 +161,38 @@ def TrainLSTM(graphs, learning_rate, batch_size, epoch, n_thread, n_layers):
         for di in partitions:
             ThreadCode(di, lstm_cell, learning_rate, batch_size, n_layers, opt)
         e += 1
+    return lstm_cell
+
+def create_test_graph(n_nodes=20):
+    k = random.randint(3, n_nodes-1)
+    edge_prob = k / n_nodes
+    return nx.erdos_renyi_graph(n_nodes, edge_prob)
+
+def test_model(lstm_cell_trained, graph, n_layers=2, num_iterations=10, output_filename="cost_function_plot.png"):
+    graph_cost = qaoa_maxcut_graph(graph, n_layers=n_layers)
+    initial_cost = tf.ones(shape=(1, 1))
+    initial_params = tf.ones(shape=(1, 2 * n_layers))
+    initial_h = tf.ones(shape=(1, 2 * n_layers))
+    initial_c = tf.ones(shape=(1, 2 * n_layers))
+    
+    costs = []
+    outputs = [hybrid_iteration([initial_cost, initial_params, initial_h, initial_c], graph_cost, lstm_cell_trained, n_layers)]
+    costs.append(outputs[0][0].numpy().flatten()[0])
+    
+    for _ in range(1, num_iterations):
+        outputs.append(hybrid_iteration(outputs[-1], graph_cost, lstm_cell_trained, n_layers))
+        costs.append(outputs[-1][0].numpy().flatten()[0])
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(costs, marker='o', linestyle='-', color='b')
+    plt.xlabel('Iteration')
+    plt.ylabel('Cost Function Value')
+    plt.title('Cost Function Value During Iterations')
+    plt.grid(True)
+    plt.savefig(output_filename)
+    plt.close()
+
+    return costs[-1]
 
 graphs = create_graph_train_dataset(12)
 learning_rate = 0.01
@@ -169,79 +201,13 @@ epoch = 5
 n_thread = 4
 n_layers = 2
 
-TrainLSTM(graphs, learning_rate, batch_size, epoch, n_thread, n_layers)
+lstm_cell_trained = TrainLSTM(graphs, learning_rate, batch_size, epoch, n_thread, n_layers)
 
-graph_cost_list = [qaoa_maxcut_graph(g) for g in graphs]
+# Creiamo un grafico di test con 20 nodi
+test_graph = create_test_graph(20)
 
-new_graph = nx.gnp_random_graph(20, p=3 / 7)
-new_cost = qaoa_maxcut_graph(new_graph)
+# Eseguiamo il test del modello
+final_cost = test_model(lstm_cell_trained, test_graph, n_layers=n_layers)
 
-nx.draw(new_graph)
-plt.savefig("../test_graph.png")  # Specifica il percorso e il nome del file immagine
-plt.close()  # Chiudi la figura per liberare la memoria
-
-start_zeros = tf.zeros(shape=(2 * n_layers, 1))
-res = recurrent_loop(new_cost, lstm_cell, n_layers=2, intermediate_steps=True)
-# Inizializza le variabili per memorizzare i valori di guess
-guess_list = []
-guess_list.append(start_zeros)
-
-# Esegui 10 iterazioni
-for i in range(10):
-    guess = res[i]  # Supponiamo che res abbia almeno 10 elementi
-    guess_list.append(guess)
-
-# Losses from the hybrid LSTM model
-lstm_losses = [new_cost(tf.reshape(guess, shape=(2, n_layers))) for guess in guess_list]
-
-fig, ax = plt.subplots()
-
-plt.plot(lstm_losses, color="blue", lw=3, ls="-.", label="LSTM")
-
-plt.grid(ls="--", lw=2, alpha=0.25)
-plt.ylabel("Cost function", fontsize=12)
-plt.xlabel("Iteration", fontsize=12)
-plt.legend()
-ax.set_xticks([0, 5, 10, 15, 20])
-#plt.show()
-plt.savefig("../results.png")  # Specifica il percorso e il nome del file immagine
-plt.close()  # Chiudi la figura per liberare la memoria
-
-# Parameters are randomly initialized
-x = tf.Variable(np.random.rand(2, 2))
-
-# We set the optimizer to be a Stochastic Gradient Descent
-opt = tf.keras.optimizers.SGD(learning_rate=0.01)
-step = 15
-
-# Training process
-steps = []
-sdg_losses = []
-for _ in range(step):
-    with tf.GradientTape() as tape:
-        loss = new_cost(x)
-
-    steps.append(x)
-    sdg_losses.append(loss)
-
-    gradients = tape.gradient(loss, [x])
-    opt.apply_gradients(zip(gradients, [x]))
-    print(f"Step {_+1} - Loss = {loss}")
-
-print(f"Final cost function: {new_cost(x).numpy()}\nOptimized angles: {x.numpy()}")
-
-fig, ax = plt.subplots()
-
-plt.plot(sdg_losses, color="orange", lw=3, label="SGD")
-
-plt.plot(lstm_losses, color="blue", lw=3, ls="-.", label="LSTM")
-
-plt.grid(ls="--", lw=2, alpha=0.25)
-plt.legend()
-plt.ylabel("Cost function", fontsize=12)
-plt.xlabel("Iteration", fontsize=12)
-ax.set_xticks([0, 5, 10, 15, 20])
-#plt.show()
-
-plt.savefig("../comparison.png")  # Specifica il percorso e il nome del file immagine
-plt.close()  # Chiudi la figura per liberare la memoria
+# Stampa il costo finale ottenuto dal modello
+print("Final cost for the test graph:", final_cost)
