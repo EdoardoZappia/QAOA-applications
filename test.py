@@ -181,7 +181,7 @@ plt.savefig("../test_graph.png")  # Specifica il percorso e il nome del file imm
 plt.close()  # Chiudi la figura per liberare la memoria
 
 start_zeros = tf.zeros(shape=(2 * n_layers, 1))
-
+res = recurrent_loop(new_cost, intermediate_steps=True)
 # Inizializza le variabili per memorizzare i valori di guess
 guess_list = []
 guess_list.append(start_zeros)
